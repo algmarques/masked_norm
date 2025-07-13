@@ -7,6 +7,7 @@ packages = ["masked_norm"]
 
 [project]
 name = "masked_norm"
+description = "A modern implementation of normalization layers"
 
 authors = [
     {name = "algmarques"}
