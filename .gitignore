@@ -1,0 +1,10 @@
+/.python-version
+
+/.venv/
+/.dev/
+/.pub/
+
+/build/
+/*.egg-info/
+/dist/
+
