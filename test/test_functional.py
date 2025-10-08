@@ -5,12 +5,11 @@ Functional module testing
 from __future__ import annotations
 
 from torch import Tensor, tensor
-
-from .tensor_test_case import TensorTestCase
-
 from masked_norm import masked_norm
 from masked_norm import affine_masked_norm
 from masked_norm import batched_masked_norm
+
+from .tensor_test_case import TensorTestCase
 
 
 class TestMaskedNorm(TensorTestCase):
@@ -132,6 +131,32 @@ class TestMaskedNorm(TensorTestCase):
         out = masked_norm(inpt_3, mask_2)
 
         self.assertEqTensor(out, out_3)
+
+    def test_empty(self: TestMaskedNorm) -> None:
+        """
+        """
+
+        empty_inpt = tensor([])
+
+        out = masked_norm(empty_inpt)
+
+        self.assertEqTensor(out, empty_inpt)
+
+    def test_singleton_dim(self: TestMaskedNorm) -> None:
+        """
+        """
+
+        inpt_4 = tensor(
+            [
+                [0.0],
+                [1.0],
+                [2.0]
+            ]
+        )
+
+        out = masked_norm(inpt_4)
+
+        self.assertEqTensor(out, inpt_4)
 
 
 class TestAffineMaskedNorm(TensorTestCase):
@@ -518,4 +543,3 @@ class TestBatchedMaskedNorm(TensorTestCase):
         out = batched_masked_norm(inpt_3, mask_2)
 
         self.assertEqTensor(out, out_3)
-

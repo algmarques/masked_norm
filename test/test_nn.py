@@ -1,5 +1,5 @@
 """
-Torch nns module testing
+Nns module testing
 """
 
 from __future__ import annotations
@@ -7,10 +7,7 @@ from __future__ import annotations
 from math import sqrt
 
 from torch import Tensor, tensor, ones_like, zeros_like, ones
-
 from torch.nn import BatchNorm1d, LayerNorm, InstanceNorm1d, GroupNorm
-
-from .tensor_test_case import TensorTestCase
 
 from masked_norm import masked_norm, batched_masked_norm
 from masked_norm import MaskedNorm
@@ -20,6 +17,8 @@ from masked_norm import affine_masked_norm
 from masked_norm import batched_affine_masked_norm
 from masked_norm import LazyAffineMaskedNorm
 from masked_norm.validation import validate_affine_masked_norm
+
+from .tensor_test_case import TensorTestCase
 
 
 class TestMaskedNorm(TensorTestCase):

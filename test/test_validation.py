@@ -3,15 +3,15 @@ Validation module testing
 """
 
 from __future__ import annotations
-from unittest import TestCase
 
 from torch import Tensor, tensor
-
 from masked_norm.validation import validate_masked_norm
 from masked_norm.validation import validate_affine_masked_norm
 
+from .tensor_test_case import TensorTestCase
 
-class TestValidateMaskedNorm(TestCase):
+
+class TestValidateMaskedNorm(TensorTestCase):
     """
     'validate_masked_norm' testing unit
     """
@@ -89,7 +89,7 @@ class TestValidateMaskedNorm(TestCase):
             validate_masked_norm(self.inpt, mask_4)
 
 
-class TestValidateAffineMaskedNorm(TestCase):
+class TestValidateAffineMaskedNorm(TensorTestCase):
     """
     'validate_affine_masked_norm' testing unit
     """

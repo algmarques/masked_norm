@@ -29,8 +29,14 @@ def masked_norm(
 
     validate_masked_norm(inpt, mask)
 
+    *_, n = list(inpt.shape)
+
+    if n > 1:
+        var = inpt.var(dim=-1, keepdim=True)
+    else:
+        return inpt
+
     mean = inpt.mean(dim=-1, keepdim=True)
-    var = inpt.var(dim=-1, keepdim=True)
 
     var_mask = (var != 0.0).squeeze(-1)
     if mask is None:
