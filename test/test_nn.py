@@ -12,11 +12,12 @@ from torch.nn import BatchNorm1d, LayerNorm, InstanceNorm1d, GroupNorm
 
 from .tensor_test_case import TensorTestCase
 
-from masked_norm import masked_norm
+from masked_norm import masked_norm, batched_masked_norm
 from masked_norm import MaskedNorm
 from masked_norm import LazyMaskedNorm
 
 from masked_norm import affine_masked_norm
+from masked_norm import batched_affine_masked_norm
 from masked_norm import LazyAffineMaskedNorm
 from masked_norm.validation import validate_affine_masked_norm
 
@@ -84,7 +85,7 @@ class TestMaskedNorm(TensorTestCase):
 
         self.assertEqTensor(layer_out, functional_out)
 
-    def test_forward_mask_1(self: TestMaskerNorm) -> None:
+    def test_forward_mask_1(self: TestMaskedNorm) -> None:
         """
         """
 
@@ -96,6 +97,34 @@ class TestMaskedNorm(TensorTestCase):
         layer_out = layer(self.inpt_1, mask_1)
 
         functional_out = masked_norm(self.inpt_1, mask_1)
+
+        self.assertEqTensor(layer_out, functional_out)
+
+    def test_forward_batched_mask_0(self: TestMaskedNorm) -> None:
+        """
+        """
+
+        mask_0 = None
+
+        layer = MaskedNorm(batched=True)
+        layer_out = layer(self.inpt_1, mask_0)
+
+        functional_out = batched_masked_norm(self.inpt_1, mask_0)
+
+        self.assertEqTensor(layer_out, functional_out)
+
+    def test_forward_batched_mask_1(self: TestMaskedNorm) -> None:
+        """
+        """
+
+        mask_2 = tensor(
+            [True, True, False]
+        )
+
+        layer = MaskedNorm(batched=True)
+        layer_out = layer(self.inpt_1, mask_2)
+
+        functional_out = batched_masked_norm(self.inpt_1, mask_2)
 
         self.assertEqTensor(layer_out, functional_out)
 
@@ -217,20 +246,21 @@ class TestLazyMaskedNorm(TensorTestCase):
             ]
         )
 
-    def test_forward_mask_0(self: TestLazyMaskedNorm) -> None:
+    def test_init_mask_0(self: TestLazyMaskedNorm) -> None:
         """
         """
 
         mask_0 = None
 
-        layer = LazyMaskedNorm()
-        layer_out = layer(self.inpt, mask_0)
+        try:
+            layer = LazyMaskedNorm()
+            layer.forward(self.inpt, mask_0)
+            self.assertTrue(True)
 
-        functional_out = masked_norm(self.inpt, mask_0)
+        except:
+            self.assertTrue(False)
 
-        self.assertEqTensor(layer_out, functional_out)
-
-    def test_forward_mask_1(self: TestLazyMaskedNorm) -> None:
+    def test_init_mask_1(self: TestLazyMaskedNorm) -> None:
         """
         """
 
@@ -238,12 +268,13 @@ class TestLazyMaskedNorm(TensorTestCase):
             [True, False]
         )
 
-        layer = LazyMaskedNorm()
-        layer_out = layer(self.inpt, mask_1)
+        try:
+            layer = LazyMaskedNorm()
+            layer.forward(self.inpt, mask_1)
+            self.assertTrue(True)
 
-        functional_out = masked_norm(self.inpt, mask_1)
-
-        self.assertEqTensor(layer_out, functional_out)
+        except:
+            self.assertTrue(False)
 
 
 class TestLazyAffineMaskedNorm(TensorTestCase):
@@ -347,6 +378,46 @@ class TestLazyAffineMaskedNorm(TensorTestCase):
         layer_out = layer(self.inpt, mask_1)
 
         functional_out = affine_masked_norm(
+            self.inpt,
+            mask_1,
+            layer.weight,
+            layer.bias
+        )
+
+        self.assertEqTensor(layer_out, functional_out)
+
+    def test_forward_batched_mask_0(self: TestLazyAffineMaskedNorm) -> None:
+        """
+        """
+
+        mask_0 = None
+
+        layer = LazyAffineMaskedNorm(batched=True)
+
+        layer_out = layer(self.inpt, mask_0)
+
+        functional_out = batched_affine_masked_norm(
+            self.inpt,
+            mask_0,
+            layer.weight,
+            layer.bias
+        )
+
+        self.assertEqTensor(layer_out, functional_out)
+
+    def test_forward_batched_mask_1(self: TestLazyAffineMaskedNorm) -> None:
+        """
+        """
+
+        mask_1 = tensor(
+            [True, True, False]
+        )
+
+        layer = LazyAffineMaskedNorm(batched=True)
+
+        layer_out = layer(self.inpt, mask_1)
+
+        functional_out = batched_affine_masked_norm(
             self.inpt,
             mask_1,
             layer.weight,

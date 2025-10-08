@@ -68,10 +68,12 @@ def affine_masked_norm(
 
     inpt = masked_norm(inpt, mask)
 
-    if bias is None:
-        return weight[..., None] * inpt
+    inpt = weight[..., None] * inpt
 
-    return weight[..., None] * inpt + bias[..., None]
+    if bias is not None:
+        inpt = inpt + bias[..., None]
+
+    return inpt
 
 
 def batched_masked_norm(inpt: Tensor, mask: Optional[Tensor]) -> Tensor:
@@ -95,8 +97,8 @@ def batched_masked_norm(inpt: Tensor, mask: Optional[Tensor]) -> Tensor:
 
     inpt = masked_norm(inpt, mask)
 
-    inv = [n - 1] + list(range(0, n - 1))
-    inpt = permute(inpt, inv)
+    inv_perm = [n - 1] + list(range(0, n - 1))
+    inpt = permute(inpt, inv_perm)
 
     return inpt
 
@@ -120,11 +122,22 @@ def batched_affine_masked_norm(
     first axis.
     """
 
+    shape = inpt.shape
+    n = len(shape)
+
+    perm = list(range(1, n)) + [0]
+    inpt = permute(inpt, perm)
+
     validate_affine_masked_norm(inpt, mask, weight, bias)
 
-    inpt = batched_masked_norm(inpt, mask)
+    inpt = masked_norm(inpt, mask)
 
-    if bias is None:
-        return weight[..., None] * inpt
+    inpt = weight[..., None] * inpt
 
-    return weight[..., None] * inpt + bias[..., None]
+    if bias is not None:
+        inpt = inpt + bias[..., None]
+
+    inv_perm = [n - 1] + list(range(0, n - 1))
+    inpt = permute(inpt, inv_perm)
+
+    return inpt

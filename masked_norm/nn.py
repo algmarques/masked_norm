@@ -133,6 +133,8 @@ class LazyAffineMaskedNorm(LazyMaskedNorm):
             # allocate memory to the parameters accordingly
             if mask is None:
                 shape = inpt.shape[0: -1]
+                if self.batched:
+                    shape = inpt.shape[1: ]
                 self.weight.materialize(shape)
                 self.bias.materialize(shape)
             else:
