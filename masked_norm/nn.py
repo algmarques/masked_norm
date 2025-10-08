@@ -1,12 +1,11 @@
 """
 Torch nns module:
 
-Contains implementation of PyTorch Modules that perform masked normalization
+Contains implementation of PyTorch Modules that perform masked normalization.
 """
 
 from __future__ import annotations
-
-from typing import Any
+from typing import Any, Optional
 
 from torch import Tensor
 from torch.nn import Module
@@ -21,10 +20,9 @@ from .util import get_factory_key
 
 class MaskedNorm(Module):
     """
-    MaskedNorm PyTorch class definition
+    MaskedNorm class
 
-    Plain masked normalization is stateless, but many DL devs prefer their use
-    over the functional form
+    Plain masked normalization is stateless.
     """
 
     def __init__(
@@ -40,10 +38,9 @@ class MaskedNorm(Module):
     def forward(
         self: MaskedNorm,
         inpt: Tensor,
-        mask: Tensor | None = None,
+        mask: Optional[Tensor] = None,
     ) -> Tensor:
         """
-        Forward method
         """
 
         return masked_norm(inpt, mask)
@@ -51,12 +48,12 @@ class MaskedNorm(Module):
 
 class LazyMaskedNorm(MaskedNorm, LazyModuleMixin):
     """
-    LazyMaskedNorm PyTorch class defintion
+    LazyMaskedNorm class
 
-    Stateful implementation of MaskedNorm is crazy, but a lazy variation of
-    a MaskedNorm stateful implementation is absolutely ludicrous
-    Although you can use it, it simply serves as inheritence reference for
-    LazyAffineMaskedNorm - which is stateful
+    Stateful implementation of MaskedNorm is crazy. And a lazy variation of a
+    MaskedNorm stateful implementation is absolutely ludicrous. You can use
+    it, but it simply serves as inheritence reference for
+    LazyAffineMaskedNorm.
     """
 
     def __init__(
@@ -73,11 +70,11 @@ class LazyMaskedNorm(MaskedNorm, LazyModuleMixin):
     def initialize_parameters(
         self: LazyMaskedNorm,
         inpt: Tensor,
-        mask: Tensor | None = None,
+        mask: Optional[Tensor] = None,
     ) -> None:
         """
         Lazy-specific method for initializing parameters according to the
-        input
+        input.
         """
 
         pass
@@ -85,10 +82,10 @@ class LazyMaskedNorm(MaskedNorm, LazyModuleMixin):
 
 class LazyAffineMaskedNorm(LazyMaskedNorm):
     """
-    LazyAffineMaskedNorm PyTorch class defintion
+    LazyAffineMaskedNorm class
 
     As a lazy module, the weight and bias parameters are initialized
-    dynamically as the forward method is called
+    dynamically as the forward method is called.
     """
 
     # affine transformation parameters
@@ -115,18 +112,18 @@ class LazyAffineMaskedNorm(LazyMaskedNorm):
     def initialize_parameters(
         self: LazyAffineMaskedNorm,
         inpt: Tensor,
-        mask: Tensor | None = None,
+        mask: Optional[Tensor] = None,
     ) -> None:
         """
         Lazy-specific method for initializing parameters according to the
-        input
+        input.
         """
 
         if self.has_uninitialized_params():
 
             # allocate memory to the parameters accordingly
             if mask is None:
-                shape = inpt.shape[0: 1]
+                shape = inpt.shape[0: -1]
                 self.weight.materialize(shape)
                 self.bias.materialize(shape)
             else:
@@ -141,10 +138,9 @@ class LazyAffineMaskedNorm(LazyMaskedNorm):
     def forward(
         self: LazyMaskedNorm,
         inpt: Tensor,
-        mask: Tensor | None = None
+        mask: Optional[Tensor] = None
     ) -> Tensor:
         """
-        Forward method
         """
 
         self.initialize_parameters(inpt, mask)

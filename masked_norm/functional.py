@@ -1,99 +1,67 @@
 """
-Functional module:
+Functional module
 
-Contains the functional implementation of masked normalization
+Contains the functional implementation of masked normalization.
 """
 
 from __future__ import annotations
+from typing import Optional
 
 from torch import Tensor
 
 from .validation import validate_masked_norm
 from .validation import validate_affine_masked_norm
-from .util import batchwise_mul, batchwise_add
+from .util import unsqueeze_as_
 
 
 def masked_norm(
     inpt: Tensor,
-    mask: Tensor | None = None,
+    mask: Optional[Tensor] = None,
 ) -> Tensor:
     """
-    Masked normalization procedure
+    Masked normalization procedure.
 
-    Normalizes only elements of the input specified by the mask; if no mask is
-    passed to the routine, normalization is performed across the first axis
-    If either by chance or design a collection of samples yields null
-    variance, the normalization over such collection is ignored, and the
-    values are passed along unaltered
+    Normalizes elements of the input specified by a mask. If no mask is
+    passed to the routine, normalization is performed along the last axis.
+    If either by chance or design a selection of samples yields null
+    variance, the normalization over such selection is ignored, and the
+    values are passed along unaltered.
     """
 
-    out = validate_masked_norm(inpt, mask)
+    validate_masked_norm(inpt, mask)
 
-    clone = inpt.clone()
+    mean = inpt.mean(dim=-1, keepdim=True)
+    var = inpt.var(dim=-1, keepdim=True)
 
-    dim = out.dim()
-    reduce = tuple(range(1, dim))
+    var_mask = (var != 0.0)
+    unsqueeze_as_(mask, var_mask)
+    mask |= var_mask
 
-    mean = out.mean(dim=reduce, keepdim=True)
-    var = out.var(dim=reduce, keepdim=True)
+    norm = inpt[mask] - mean[mask]
+    norm = norm / var[mask].sqrt()
 
-    var_mask = (var != 0.0).flatten()
+    inpt.masked_scatter_(mask, norm)
 
-    out = (out[var_mask] - mean[var_mask]) / var[var_mask].sqrt()
-
-    if mask is None:
-        clone[var_mask] = out
-    else:
-        tmp = clone[mask].clone()
-        tmp[var_mask] = out
-        clone[mask] = tmp
-
-    return clone
+    return inpt
 
 
 def affine_masked_norm(
     inpt: Tensor,
-    mask: Tensor | None,
+    mask: Optional[Tensor],
     weight: Tensor,
-    bias: Tensor | None,
+    bias: Optional[Tensor],
 ) -> Tensor:
     """
-    Affine masked normalization procedure
+    Affine masked normalization procedure.
 
-    Normalizes only elements of the input specified by the mask; if no mask is
-    passed to the routine, normalization is performed across the first axis
+    Normalizes elements of the input specified by a mask. If no mask is
+    passed to the routine, normalization is performed along the last axis.
     If either by chance or design a collection of samples yields null
     variance, the normalization over such collection is ignored, and the
-    values are passed along unaltered
-
-    After normalization an affine transformation is performed along the
-    normalized dimensions
+    values are passed along unaltered. After normalization an affine
+    transformation is applied along the normalized dimensions.
     """
 
-    out, weight, bias = validate_affine_masked_norm(inpt, mask, weight, bias)
+    validate_affine_masked_norm(inpt, mask, weight, bias)
 
-    clone = inpt.clone()
-
-    dim = out.dim()
-    reduce = tuple(range(1, dim))
-
-    mean = out.mean(dim=reduce, keepdim=True)
-    var = out.var(dim=reduce, keepdim=True)
-
-    var_mask = (var != 0.0).flatten()
-
-    out = (out[var_mask] - mean[var_mask]) / var[var_mask].sqrt()
-
-    out = batchwise_mul(weight[var_mask], out)
-
-    if not bias is None:
-        out = batchwise_add(bias[var_mask], out)
-
-    if mask is None:
-        clone[var_mask] = out
-    else:
-        tmp = clone[mask].clone()
-        tmp[var_mask] = out
-        clone[mask] = tmp
-
-    return clone
+    return weight * masked_norm(inpt, mask) + bias
