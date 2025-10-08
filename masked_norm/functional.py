@@ -11,7 +11,7 @@ from torch import Tensor, permute
 
 from .validation import validate_masked_norm
 from .validation import validate_affine_masked_norm
-from .util import unsqueeze_as_
+from .util import unsqueeze_as
 
 
 def masked_norm(
@@ -32,16 +32,20 @@ def masked_norm(
     mean = inpt.mean(dim=-1, keepdim=True)
     var = inpt.var(dim=-1, keepdim=True)
 
-    var_mask = (var != 0.0)
-    unsqueeze_as_(mask, var_mask)
-    mask |= var_mask
+    var_mask = (var != 0.0).squeeze(-1)
+    if mask is None:
+        mask = var_mask
+    else:
+        mask = unsqueeze_as(mask, var_mask)
+        mask |= var_mask
 
     norm = inpt[mask] - mean[mask]
     norm = norm / var[mask].sqrt()
 
-    inpt.masked_scatter_(mask, norm)
+    clone = inpt.clone()
+    clone[mask] = norm
 
-    return inpt
+    return clone
 
 
 def affine_masked_norm(
@@ -62,7 +66,12 @@ def affine_masked_norm(
 
     validate_affine_masked_norm(inpt, mask, weight, bias)
 
-    return weight * masked_norm(inpt, mask) + bias
+    inpt = masked_norm(inpt, mask)
+
+    if bias is None:
+        return weight[..., None] * inpt
+
+    return weight[..., None] * inpt + bias[..., None]
 
 
 def batched_masked_norm(inpt: Tensor, mask: Optional[Tensor]) -> Tensor:
@@ -113,4 +122,9 @@ def batched_affine_masked_norm(
 
     validate_affine_masked_norm(inpt, mask, weight, bias)
 
-    return weight * masked_norm(inpt, mask) + bias
+    inpt = batched_masked_norm(inpt, mask)
+
+    if bias is None:
+        return weight[..., None] * inpt
+
+    return weight[..., None] * inpt + bias[..., None]

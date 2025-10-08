@@ -41,7 +41,7 @@ def validate_masked_norm(inpt: Tensor, mask: Optional[Tensor]) -> None:
         # mask tensor must be necessarily of bool dtype
         raise ValueError("'mask' must be a tensor of bool dtype")
 
-    if len(inpt.shape) > len(mask.shape):
+    if not len(inpt.shape) > len(mask.shape):
         raise ValueError(
             "the shape of 'inpt' must be larger than the shape of 'mask'"
         )

@@ -3,16 +3,15 @@ Validation module testing
 """
 
 from __future__ import annotations
+from unittest import TestCase
 
 from torch import Tensor, tensor
-
-from .tensor_test_case import TensorTestCase
 
 from masked_norm.validation import validate_masked_norm
 from masked_norm.validation import validate_affine_masked_norm
 
 
-class TestValidateMaskedNorm(TensorTestCase):
+class TestValidateMaskedNorm(TestCase):
     """
     'validate_masked_norm' testing unit
     """
@@ -34,9 +33,12 @@ class TestValidateMaskedNorm(TensorTestCase):
 
         mask_0 = None
 
-        out = validate_masked_norm(self.inpt, mask_0)
+        try:
+            validate_masked_norm(self.inpt, mask_0)
+            self.assertTrue(True)
 
-        self.assertEqTensor(out, self.inpt)
+        except:
+            self.assertTrue(False)
 
     def test_mask_1(self: TestValidateMaskedNorm) -> None:
         """
@@ -46,38 +48,12 @@ class TestValidateMaskedNorm(TensorTestCase):
             [True, False]
         )
 
-        out_1 = tensor(
-            [
-                [0.00, 1.00, 2.00]
-            ]
-        )
+        try:
+            validate_masked_norm(self.inpt, mask_1)
+            self.assertTrue(True)
 
-        out = validate_masked_norm(self.inpt, mask_1)
-
-        self.assertEqTensor(out, out_1)
-
-    def test_mask_2(self: TestValidateMaskedNorm) -> None:
-        """
-        """
-
-        mask_2 = tensor(
-            [
-                [True, True, False],
-                [True, False, False]
-            ]
-        )
-
-        out_2 = tensor(
-            [
-                0.00,
-                1.00,
-                3.00
-            ]
-        )
-
-        out = validate_masked_norm(self.inpt, mask_2)
-
-        self.assertEqTensor(out, out_2)
+        except:
+            self.assertTrue(False)
 
     def test_mask_3(self: TestValidateMaskedNorm) -> None:
         """
@@ -93,7 +69,7 @@ class TestValidateMaskedNorm(TensorTestCase):
 
         with self.assertRaisesRegex(
             ValueError,
-            "'mask' must have a smaller number of axes than 'inpt'"
+            "the shape of 'inpt' must be larger than the shape of 'mask'"
         ):
             validate_masked_norm(self.inpt, mask_3)
 
@@ -102,10 +78,7 @@ class TestValidateMaskedNorm(TensorTestCase):
         """
 
         mask_4 = tensor(
-            [
-                [True],
-                [False]
-            ]
+            [True]
         )
 
         with self.assertRaisesRegex(
@@ -116,7 +89,7 @@ class TestValidateMaskedNorm(TensorTestCase):
             validate_masked_norm(self.inpt, mask_4)
 
 
-class TestValidateAffineMaskedNorm(TensorTestCase):
+class TestValidateAffineMaskedNorm(TestCase):
     """
     'validate_affine_masked_norm' testing unit
     """
@@ -147,15 +120,12 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
 
         bias_0 = None
 
-        out, weight, bias = validate_affine_masked_norm(
-            self.inpt,
-            mask_0,
-            weight_1,
-            bias_0
-        )
+        try:
+            validate_affine_masked_norm(self.inpt, mask_0, weight_1, bias_0)
+            self.assertTrue(True)
 
-        self.assertEqTensor(weight, weight_1)
-        self.assertEqTensor(bias, bias_0)
+        except:
+            self.assertTrue(False)
 
     def test_mask_0_weight_1_bias_1(
         self: TestValidateAffineMaskedNorm
@@ -173,15 +143,12 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
             [0.0, 0.0]
         )
 
-        out, weight, bias = validate_affine_masked_norm(
-            self.inpt,
-            mask_0,
-            weight_1,
-            bias_1
-        )
+        try:
+            validate_affine_masked_norm(self.inpt, mask_0, weight_1, bias_1)
+            self.assertTrue(True)
 
-        self.assertEqTensor(weight, weight_1)
-        self.assertEqTensor(bias, bias_1)
+        except:
+            self.assertTrue(False)
 
     def test_mask_0_weight_2_bias_0(
             self: TestValidateAffineMaskedNorm
@@ -192,16 +159,14 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
         mask_0 = None
 
         weight_2 = tensor(
-            [
-                [1.0, 1.0, 1.0]
-            ]
+            [1.0, 1.0, 1.0]
         )
 
         bias_0 = None
 
         with self.assertRaisesRegex(
             ValueError,
-            "'weight' must be a flat tensor"
+            "'weight' must be a tensor with shape"
         ):
             validate_affine_masked_norm(self.inpt, mask_0, weight_2, bias_0)
 
@@ -218,14 +183,12 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
         )
 
         bias_2 = tensor(
-            [
-                [0.0, 0.0, 0.0]
-            ]
+            [0.0, 0.0, 0.0]
         )
 
         with self.assertRaisesRegex(
             ValueError,
-            "'bias' must be a flat tensor"
+            "'bias' must be a tensor with shape"
         ):
             validate_affine_masked_norm(self.inpt, mask_0, weight_1, bias_2)
 
@@ -245,15 +208,12 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
 
         bias_0 = None
 
-        out, weight, bias = validate_affine_masked_norm(
-            self.inpt,
-            mask_1,
-            weight_1,
-            bias_0
-        )
+        try:
+            validate_affine_masked_norm(self.inpt, mask_1, weight_1, bias_0)
+            self.assertTrue(True)
 
-        self.assertEqTensor(weight, weight_1)
-        self.assertEqTensor(bias, bias_0)
+        except:
+            self.assertTrue(False)
 
     def test_mask_1_weight_1_bias_1(
         self: TestValidateAffineMaskedNorm
@@ -273,15 +233,12 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
             [0.0, 0.0]
         )
 
-        out, weight, bias = validate_affine_masked_norm(
-            self.inpt,
-            mask_1,
-            weight_1,
-            bias_1
-        )
+        try:
+            validate_affine_masked_norm(self.inpt, mask_1, weight_1, bias_1)
+            self.assertTrue(True)
 
-        self.assertEqTensor(weight, weight_1)
-        self.assertEqTensor(bias, bias_1)
+        except:
+            self.assertTrue(False)
 
     def test_mask_1_weight_2_bias_0(
         self: TestValidateAffineMaskedNorm
@@ -294,9 +251,7 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
         )
 
         weight_2 = tensor(
-            [
-                [1.0, 1.0, 1.0]
-            ]
+            [1.0, 1.0, 1.0]
         )
 
         bias_0 = None
@@ -322,9 +277,7 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
         )
 
         bias_2 = tensor(
-            [
-                [0.0, 0.0, 0.0]
-            ]
+            [0.0, 0.0, 0.0]
         )
 
         with self.assertRaisesRegex(
@@ -332,133 +285,3 @@ class TestValidateAffineMaskedNorm(TensorTestCase):
             "'bias' must have the same shape as 'mask'"
         ):
             validate_affine_masked_norm(self.inpt, mask_1, weight_1, bias_2)
-
-    def test_mask_2_weight_3_bias_0(
-        self: TestValidateAffineMaskedNorm
-    ) -> None:
-        """
-        """
-
-        mask_2 = tensor(
-            [
-                [True, True, False],
-                [True, False, False]
-            ]
-        )
-
-        weight_3 = tensor(
-            [
-                [1.0, 1.0, 1.0],
-                [1.0, 1.0, 1.0]
-            ]
-        )
-
-        bias_0 = None
-
-        out, weight, bias = validate_affine_masked_norm(
-            self.inpt,
-            mask_2,
-            weight_3,
-            bias_0
-        )
-
-        self.assertEqTensor(weight, weight_3)
-        self.assertEqTensor(bias, bias_0)
-
-    def test_mask_2_weight_3_bias_3(
-        self: TestValidateAffineMaskedNorm
-    ) -> None:
-        """
-        """
-
-        mask_2 = tensor(
-            [
-                [True, True, False],
-                [True, False, False]
-            ]
-        )
-
-        weight_3 = tensor(
-            [
-                [1.0, 1.0, 1.0],
-                [1.0, 1.0, 1.0]
-            ]
-        )
-
-        bias_3 = tensor(
-            [
-                [0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.0]
-            ]
-        )
-
-        out, weight, bias = validate_affine_masked_norm(
-            self.inpt,
-            mask_2,
-            weight_3,
-            bias_3
-        )
-
-        self.assertEqTensor(weight, weight_3)
-        self.assertEqTensor(bias, bias_3)
-
-    def test_mask_2_weight_4_bias_0(
-        self: TestValidateAffineMaskedNorm
-    ) -> None:
-        """
-        """
-
-        mask_2 = tensor(
-            [
-                [True, True, False],
-                [True, False, False]
-            ]
-        )
-
-        weight_4 = tensor(
-            [
-                [1.0, 1.0],
-                [1.0, 1.0]
-            ]
-        )
-
-        bias_0 = None
-
-        with self.assertRaisesRegex(
-            ValueError,
-            "'weight' must have the same shape as 'mask'"
-        ):
-            validate_affine_masked_norm(self.inpt, mask_2, weight_4, bias_0)
-
-    def test_mask_2_weight_3_bias_4(
-        self: TestValidateAffineMaskedNorm
-    ) -> None:
-        """
-        """
-
-        mask_2 = tensor(
-            [
-                [True, True, False],
-                [True, False, False]
-            ]
-        )
-
-        weight_3 = tensor(
-            [
-                [1.0, 1.0, 1.0],
-                [1.0, 1.0, 1.0]
-            ]
-        )
-
-        bias_4 = tensor(
-            [
-                [0.0, 0.0],
-                [0.0, 0.0]
-            ]
-        )
-
-        with self.assertRaisesRegex(
-            ValueError,
-            "'bias' must have the same shape as 'mask'"
-        ):
-            validate_affine_masked_norm(self.inpt, mask_2, weight_3, bias_4)

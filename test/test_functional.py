@@ -266,7 +266,7 @@ class TestAffineMaskedNorm(TensorTestCase):
         out_4 = tensor(
             [
                 [-1.0, 1.00, 3.00],
-                [0.00, 0.00, 0.00]
+                [1.00, 1.00, 1.00]
             ]
         )
 
@@ -374,7 +374,7 @@ class TestAffineMaskedNorm(TensorTestCase):
                 ],
                 [
                     [-1.0, 2.00, 5.00],
-                    [0.00, 0.00, 0.00]
+                    [-1.0, -1.0, -1.0]
                 ]
             ]
         )

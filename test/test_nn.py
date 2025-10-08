@@ -109,8 +109,10 @@ class TestMaskedNorm(TensorTestCase):
         batch_norm_layer = BatchNorm1d(4, eps=0.0, affine=False)
 
         inpt = self.inpt_2.transpose(0, 1)
-
+        shape = inpt.shape
+        inpt = inpt.flatten(start_dim=1)
         masked_norm_out = masked_norm_layer(inpt)
+        masked_norm_out = masked_norm_out.view(*shape)
         masked_norm_out = masked_norm_out.transpose(0, 1)
 
         batch_norm_out = batch_norm_layer(self.inpt_2)
@@ -129,7 +131,11 @@ class TestMaskedNorm(TensorTestCase):
         masked_norm_layer = MaskedNorm()
         layer_norm_layer = LayerNorm((4, 3), eps=0.0, elementwise_affine=False)
 
-        masked_norm_out = masked_norm_layer(self.inpt_2)
+        inpt = self.inpt_2
+        shape = inpt.shape
+        inpt = inpt.flatten(start_dim=1)
+        masked_norm_out = masked_norm_layer(inpt)
+        masked_norm_out = masked_norm_out.view(*shape)
 
         layer_norm_out = layer_norm_layer(self.inpt_2)
 
@@ -181,7 +187,10 @@ class TestMaskedNorm(TensorTestCase):
         inpt = inpt.transpose(2, 3)
         inpt = inpt.flatten(start_dim=0, end_dim=1)
 
+        shape = inpt.shape
+        inpt = inpt.flatten(start_dim=1)
         masked_norm_out = masked_norm_layer(inpt)
+        masked_norm_out = masked_norm_out.view(*shape)
         masked_norm_out = masked_norm_out.reshape((2, 4, 3))
 
         group_norm_out = group_norm_layer(self.inpt_2)

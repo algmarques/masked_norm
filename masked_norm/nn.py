@@ -29,7 +29,7 @@ class MaskedNorm(Module):
 
     def __init__(
         self: MaskedNorm,
-        batched: Optional[bool] = False
+        batched: Optional[bool] = False,
         *args: Any,
         **kwargs: Any,
     ) -> None:
