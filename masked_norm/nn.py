@@ -14,7 +14,9 @@ from torch.nn.parameter import UninitializedParameter
 from torch.nn.init import ones_, zeros_
 
 from .functional import masked_norm
+from .functional import batched_masked_norm
 from .functional import affine_masked_norm
+from .functional import batched_affine_masked_norm
 from .util import get_factory_key
 
 
@@ -27,6 +29,7 @@ class MaskedNorm(Module):
 
     def __init__(
         self: MaskedNorm,
+        batched: Optional[bool] = False
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -34,6 +37,7 @@ class MaskedNorm(Module):
         """
 
         super().__init__(*args, **kwargs)
+        self.batched = batched
 
     def forward(
         self: MaskedNorm,
@@ -42,6 +46,9 @@ class MaskedNorm(Module):
     ) -> Tensor:
         """
         """
+
+        if self.batched:
+            return batched_masked_norm(inpt, mask)
 
         return masked_norm(inpt, mask)
 
@@ -58,13 +65,14 @@ class LazyMaskedNorm(MaskedNorm, LazyModuleMixin):
 
     def __init__(
         self: LazyMaskedNorm,
+        batched: Optional[bool] = False,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         """
         """
 
-        super().__init__(*args, **kwargs)
+        super().__init__(batched, *args, **kwargs)
         super(MaskedNorm, self).__init__()
 
     def initialize_parameters(
@@ -94,13 +102,14 @@ class LazyAffineMaskedNorm(LazyMaskedNorm):
 
     def __init__(
         self: LazyAffineMaskedNorm,
+        batched: Optional[bool] = False,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         """
         """
 
-        super().__init__(*args, **kwargs)
+        super().__init__(batched, *args, **kwargs)
 
         # the module's weight and bias parameters must be initialized with the
         # correct "device" and "dtype" that are passed onto the module
@@ -134,7 +143,6 @@ class LazyAffineMaskedNorm(LazyMaskedNorm):
             ones_(self.weight)
             zeros_(self.bias)
 
-
     def forward(
         self: LazyMaskedNorm,
         inpt: Tensor,
@@ -144,5 +152,13 @@ class LazyAffineMaskedNorm(LazyMaskedNorm):
         """
 
         self.initialize_parameters(inpt, mask)
+
+        if self.batched:
+            return batched_affine_masked_norm(
+                inpt,
+                mask,
+                self.weight,
+                self.bias
+            )
 
         return affine_masked_norm(inpt, mask, self.weight, self.bias)

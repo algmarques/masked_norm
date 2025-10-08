@@ -7,7 +7,7 @@ Contains the functional implementation of masked normalization.
 from __future__ import annotations
 from typing import Optional
 
-from torch import Tensor
+from torch import Tensor, permute
 
 from .validation import validate_masked_norm
 from .validation import validate_affine_masked_norm
@@ -21,11 +21,10 @@ def masked_norm(
     """
     Masked normalization procedure.
 
-    Normalizes elements of the input specified by a mask. If no mask is
-    passed to the routine, normalization is performed along the last axis.
-    If either by chance or design a selection of samples yields null
-    variance, the normalization over such selection is ignored, and the
-    values are passed along unaltered.
+    Normalizes elements of the input specified by a mask. The normalization is
+    performed along the last axis. If a selection of samples yields null
+    variance, the normalization over those elements is ignored, and the values
+    are passed along unaltered.
     """
 
     validate_masked_norm(inpt, mask)
@@ -54,12 +53,62 @@ def affine_masked_norm(
     """
     Affine masked normalization procedure.
 
-    Normalizes elements of the input specified by a mask. If no mask is
-    passed to the routine, normalization is performed along the last axis.
-    If either by chance or design a collection of samples yields null
-    variance, the normalization over such collection is ignored, and the
-    values are passed along unaltered. After normalization an affine
-    transformation is applied along the normalized dimensions.
+    Normalizes elements of the input specified by a mask. The normalization is
+    performed along the last axis. If a selection of samples yields null
+    variance, the normalization over those elements is ignored, and the values
+    are passed along unaltered. After normalization an affine transformation
+    is applied along the normalized axis.
+    """
+
+    validate_affine_masked_norm(inpt, mask, weight, bias)
+
+    return weight * masked_norm(inpt, mask) + bias
+
+
+def batched_masked_norm(inpt: Tensor, mask: Optional[Tensor]) -> Tensor:
+    """
+    Batched masked normalization procedure.
+
+    Normalizes elements of the input specified by a mask. The normalization is
+    performed along the first axis. If a selection of samples yields null
+    variance, the normalization over those elements is ignored, and the values
+    are passed along unaltered. Standard masked normalization is performed
+    along the last axis, which is usually populated with features. Batched
+    masked normalization reverses this order by normalizing along the first
+    axis.
+    """
+
+    shape = inpt.shape
+    n = len(shape)
+
+    perm = list(range(1, n)) + [0]
+    inpt = permute(inpt, perm)
+
+    inpt = masked_norm(inpt, mask)
+
+    inv = [n - 1] + list(range(0, n - 1))
+    inpt = permute(inpt, inv)
+
+    return inpt
+
+
+def batched_affine_masked_norm(
+    inpt: Tensor,
+    mask: Optional[Tensor],
+    weight: Tensor,
+    bias: Optional[Tensor],
+) -> Tensor:
+    """
+    Batched affine masked normalization procedure.
+
+    Normalizes elements of the input specified by a mask. The normalization is
+    performed along the first axis. If a selection of samples yields null
+    variance, the normalization over those elements is ignored, and the values
+    are passed along unaltered. After normalization an affine transformation
+    is applied along the normalized axis. Standard masked normalization is
+    performed along the last axis, which is usually populated with features.
+    Batched masked normalization reverses this order by normalizing along the
+    first axis.
     """
 
     validate_affine_masked_norm(inpt, mask, weight, bias)
