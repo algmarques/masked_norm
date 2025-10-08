@@ -5,6 +5,5 @@
 /.pub/
 
 /build/
-/*.egg-info/
 /dist/
-
+/*.egg-info/

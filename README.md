@@ -37,9 +37,15 @@ To use it in your project, install it via `pip`:
 pip install masked_norm
 ```
 
-Two user-facing implementations are presented: a plain masked normalization
-`masked_norm`, and a masked normalization followed by an affine
-transformation `LazyAffineMaskedNorm`.
+Three core user-facing implementations are presented: a plain masked
+normalization `masked_norm`, a batched masked normalization
+`batched_masked_norm`, and an affine masked normalization
+`LazyAffineMaskedNorm`. Plain `masked_norm` normalizes values along the last
+axis of the input, while `batched_masked_norm` normalizes along the first
+axis. These two variant cover most functional use cases.
+`LazyAffineMaskedNorm` performs an affine transformation after normalization,
+it can have a batched or unbatched behaviour which is specified by a keyword
+argument to the constructor.
 
 You can use the functional form of the masked normalization transformation
 directy in your model's forward call:
@@ -65,7 +71,7 @@ Our use its class equivalent:
 from torch import tensor, rand
 from masked_norm import MaskedNorm
 
-inpt = rand(2, 2, 3)
+inpt = rand(4, 2, 2)
 mask = tensor(
     [
         [True, True],
@@ -73,7 +79,7 @@ mask = tensor(
     ]
 )
 
-norm_layer = MaskedNorm()
+norm_layer = MaskedNorm(batched=True)
 
 norm_layer(inpt, mask)
 ```
@@ -100,11 +106,12 @@ affine_norm_layer(inpt, mask)
 
 To see how you can reproduce the batch, group, layer, or instance
 normalization procedures with masked normalization take a look at the `test`
-subdirectory.
+subdirectory. Note that the variance estimator of the official Pytorch
+implementations of these layers is biased.
 
-If, either by chance or design, a collection of samples is constant, the
+If, either by chance or design, a selection of samples is constant, the
 proposed `masked_norm` and `affine_masked_norm` implementations ignore
-this collection, and pass the values along unaltered.
+this selection, and pass the values along unaltered.
 
 To run the test suite:
 
