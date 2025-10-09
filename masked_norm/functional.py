@@ -32,24 +32,26 @@ def masked_norm(
     if n < 2:
         return inpt
 
-    mean = inpt.mean(dim=-1, keepdim=True)
+    mean = inpt.mean(dim=-1)
+    mean = mean[..., None]
 
-    var = inpt.var(dim=-1, keepdim=True)
+    var = inpt.var(dim=-1)
+    var_mask = (var != 0.0)
+    var = var[..., None]
 
-    var_mask = (var != 0.0).squeeze(-1)
     if mask is None:
         mask = var_mask
     else:
         mask = unsqueeze_as(mask, var_mask)
-        mask |= var_mask
+        mask = mask & var_mask
 
     norm = inpt[mask] - mean[mask]
     norm = norm / var[mask].sqrt()
 
-    clone = inpt.clone()
-    clone[mask] = norm
+    mask = unsqueeze_as(mask, inpt)
+    inpt = inpt.masked_scatter(mask, norm)
 
-    return clone
+    return inpt
 
 
 def affine_masked_norm(

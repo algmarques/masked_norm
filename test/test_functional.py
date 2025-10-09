@@ -91,6 +91,44 @@ class TestMaskedNorm(TensorTestCase):
 
         self.assertEqTensor(out, out_2)
 
+    def test_input_3_mask_1(self: TestMaskedNorm) -> None:
+        """
+        """
+
+        inpt_3 = tensor(
+            [
+                [
+                    [0.00, 1.00, 2.00],
+                    [3.00, 4.00, 5.00]
+                ],
+                [
+                    [6.00, 7.00, 8.00],
+                    [0.00, 0.00, 0.00]
+                ]
+            ]
+        )
+
+        mask_1 = tensor(
+                [True, False]
+        )
+
+        out_3 = tensor(
+            [
+                [
+                    [-1.0, 0.00, 1.00],
+                    [-1.0, 0.00, 1.00]
+                ],
+                [
+                    [6.00, 7.00, 8.00],
+                    [0.00, 0.00, 0.00]
+                ]
+            ]
+        )
+
+        out = masked_norm(inpt_3, mask_1)
+
+        self.assertEqTensor(out, out_3)
+
     def test_input_3_mask_2(self: TestMaskedNorm) -> None:
         """
         """
