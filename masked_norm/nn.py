@@ -1,7 +1,5 @@
 """
-Torch nns module:
-
-Contains implementation of PyTorch Modules that perform masked normalization.
+Nn module
 """
 
 from __future__ import annotations
@@ -23,8 +21,6 @@ from .util import get_factory_key
 class MaskedNorm(Module):
     """
     MaskedNorm class
-
-    Plain masked normalization is stateless.
     """
 
     def __init__(

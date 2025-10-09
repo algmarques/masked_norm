@@ -1,7 +1,5 @@
 """
 Functional module
-
-Contains the functional implementation of masked normalization.
 """
 
 from __future__ import annotations
@@ -31,12 +29,12 @@ def masked_norm(
 
     *_, n = list(inpt.shape)
 
-    if n > 1:
-        var = inpt.var(dim=-1, keepdim=True)
-    else:
+    if n < 2:
         return inpt
 
     mean = inpt.mean(dim=-1, keepdim=True)
+
+    var = inpt.var(dim=-1, keepdim=True)
 
     var_mask = (var != 0.0).squeeze(-1)
     if mask is None:
@@ -82,7 +80,10 @@ def affine_masked_norm(
     return inpt
 
 
-def batched_masked_norm(inpt: Tensor, mask: Optional[Tensor]) -> Tensor:
+def batched_masked_norm(
+    inpt: Tensor,
+    mask: Optional[Tensor] = None,
+) -> Tensor:
     """
     Batched masked normalization procedure.
 
